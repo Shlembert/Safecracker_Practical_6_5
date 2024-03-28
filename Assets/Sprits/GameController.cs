@@ -47,10 +47,11 @@ public class GameController : MonoBehaviour
         }
 
         _lock = new Int3(
-         Mathf.Clamp(_lock.a + lockpick.a, 0, 10),
-         Mathf.Clamp(_lock.b + lockpick.b, 0, 10),
-         Mathf.Clamp(_lock.c + lockpick.c, 0, 10));
+         Mathf.Clamp(_lock.a + lockpick.a, minPosition, maxPosition),
+         Mathf.Clamp(_lock.b + lockpick.b, minPosition, maxPosition),
+         Mathf.Clamp(_lock.c + lockpick.c, minPosition, maxPosition));
 
+        CheckCombine();
         DisplayLock();
     }
 
@@ -71,6 +72,12 @@ public class GameController : MonoBehaviour
         }
 
         Debug.Log("Game Over!");
+    }
+    private void CheckCombine()
+    {
+        if (_lock.a == openCombine 
+            && _lock.b == openCombine 
+            && _lock.c == openCombine) Debug.Log("You Win!");
     }
 
     private void UpdateTimerText(float time)

@@ -73,6 +73,7 @@ public class GameController : MonoBehaviour
 
         Debug.Log("Game Over!");
     }
+
     private void CheckCombine()
     {
         if (_lock.a == openCombine 

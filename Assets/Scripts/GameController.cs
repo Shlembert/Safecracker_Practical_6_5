@@ -8,19 +8,38 @@ public class GameController : MonoBehaviour
     [SerializeField] private int openCombine, minPosition, maxPosition;
     [SerializeField] private float timeValue;
     [SerializeField] private TMP_Text lockText, timeText;
+    [SerializeField] private PinMuvement pinMuvement;
+    [SerializeField] private ColorPinController colorPin;
+    [SerializeField] private WindowsController windowsController;
 
     private Int3 _lock;
+    private Coroutine timerCoroutine;
 
     private void Start()
     {
         SetLockStartCombine();
     }
 
-    private void SetLockStartCombine()
+    public void SetLockStartCombine()
     {
         _lock = GetRandomCombine();
-        DisplayLock();
-        StartCoroutine(Timer());
+        CheckPinPosition();
+        DisplayLock(true);
+        StartTimer();
+    }
+
+    private void StartTimer()
+    {
+        timerCoroutine = StartCoroutine(Timer());
+    }
+
+    private void StopTimer()
+    {
+        if (timerCoroutine != null)
+        {
+            StopCoroutine(timerCoroutine);
+            timerCoroutine = null;
+        }
     }
 
     private Int3 GetRandomCombine()
@@ -52,12 +71,13 @@ public class GameController : MonoBehaviour
          Mathf.Clamp(_lock.c + lockpick.c, minPosition, maxPosition));
 
         CheckCombine();
-        DisplayLock();
+        DisplayLock(false);
     }
 
-    private void DisplayLock()
+    private async void DisplayLock(bool start)
     {
         lockText.text = $" {_lock.a} {_lock.b} {_lock.c}";
+        await pinMuvement.MovePinAsync(_lock, start);
     }
 
     private IEnumerator Timer()
@@ -71,14 +91,40 @@ public class GameController : MonoBehaviour
             UpdateTimerText(currentTime);
         }
 
-        Debug.Log("Game Over!");
+        windowsController.GameOver();
     }
 
     private void CheckCombine()
     {
-        if (_lock.a == openCombine 
-            && _lock.b == openCombine 
-            && _lock.c == openCombine) Debug.Log("You Win!");
+        if (   _lock.a == openCombine
+            && _lock.b == openCombine
+            && _lock.c == openCombine)
+        {
+            windowsController.GameWin();
+            StopTimer();
+        }
+
+        CheckPinPosition();
+    }
+
+    private void CheckPinPosition()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            bool isPinCorrect = GetPinValue(i) == openCombine;
+            colorPin.SetColor(i, isPinCorrect);
+        }
+    }
+
+    private int GetPinValue(int index)
+    {
+        switch (index)
+        {
+            case 0: return _lock.a;
+            case 1: return _lock.b;
+            case 2: return _lock.c;
+            default: return 0;
+        }
     }
 
     private void UpdateTimerText(float time)
